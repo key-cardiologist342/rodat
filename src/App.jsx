@@ -1203,7 +1203,7 @@ function Categorias({ categorias, setCategorias }) {
   }
 
   async function saveEdit(id) {
-    await supabase.from('categorias').update({ name: editData.name.toLowerCase().trim(), tipo: editData.tipo }).eq('id', id)
+    await supabase.from('categorias').update({ name: editData.name.trim(), tipo: editData.tipo }).eq('id', id)
     setCategorias(prev => prev.map(c => c.id === id ? { ...c, name: editData.name.toLowerCase().trim(), tipo: editData.tipo } : c))
     setEditId(null)
   }
