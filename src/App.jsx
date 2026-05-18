@@ -175,7 +175,7 @@ function ProductGrid({ products, cart, onAdd }) {
       <div style={{ flex: 1, overflowY: 'auto', padding: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10, alignContent: 'start' }}>
         {filtered.map(product => {
           const inCart = cart.find(i => i.id === product.id)
-          const low = product.qty <= product.min_qty
+          const low = product.min_qty > 0 && product.qty <= product.min_qty
           return (
             <button key={product.id} onClick={() => onAdd(product)} style={{ background: inCart ? P : W, border: `2px solid ${low && !inCart ? AMBER : P}`, color: inCart ? W : DARK, padding: '13px 12px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', position: 'relative' }}>
               {inCart && <div style={{ position: 'absolute', top: 0, right: 0, background: W, color: P, fontWeight: 700, fontSize: 10, padding: '2px 6px', borderLeft: `2px solid ${P}`, borderBottom: `2px solid ${P}` }}>×{inCart.qty}</div>}
@@ -397,8 +397,8 @@ function Painel({ caixaAberto, fundoInicial, sales, stockItems, products, setScr
   const dinheiroDia = today.filter(v => v.payment === 'dinheiro').reduce((s, v) => s + v.total, 0)
   const trocosDia = today.filter(v => v.payment === 'dinheiro').reduce((s, v) => s + (v.change_val || 0), 0)
   const dinheiroEmCaixa = fundoInicial + dinheiroDia - trocosDia
-  const lowStock = stockItems.filter(i => i.qty <= i.min_qty)
-  const lowProducts = products.filter(p => p.active && p.qty <= p.min_qty)
+  const lowStock = stockItems.filter(i => i.min_qty > 0 && i.qty <= i.min_qty)
+  const lowProducts = products.filter(p => p.active && p.min_qty > 0 && p.qty <= p.min_qty)
 
   return (
     <div style={{ padding: 24, overflowY: 'auto', flex: 1 }}>
@@ -1073,7 +1073,7 @@ function Produtos({ products, setProducts, categorias }) {
           return (
             <div key={cat} style={{ marginBottom: 22 }}>
               <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 2, color: '#aaa', marginBottom: 10, textTransform: 'uppercase' }}>{cat}</div>
-              {ps.map(p => { const lucroP = p.price - (p.cost_insumos||0) - (p.cost_prod||0); const low = p.qty <= p.min_qty; return (
+              {ps.map(p => { const lucroP = p.price - (p.cost_insumos||0) - (p.cost_prod||0); const low = p.min_qty > 0 && p.qty <= p.min_qty; return (
                 <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', background: p.active ? W : '#f5f5f5', border: `2px solid ${low ? AMBER : p.active ? '#e0d0ea' : '#ddd'}`, marginBottom: 8 }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, fontSize: 12, color: p.active ? DARK : '#bbb' }}>{p.name}</div>
@@ -1120,7 +1120,7 @@ function Estoque({ stockItems, setStockItems, categorias }) {
     setEditId(null)
   }
 
-  const low = stockItems.filter(i => i.qty <= i.min_qty)
+  const low = stockItems.filter(i => i.min_qty > 0 && i.qty <= i.min_qty)
   return (
     <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
       <div style={{ width: 280, padding: 22, borderRight: `2px solid #e0d0ea`, background: W, overflowY: 'auto' }}>
@@ -1138,7 +1138,7 @@ function Estoque({ stockItems, setStockItems, categorias }) {
       <div style={{ flex: 1, padding: 22, overflowY: 'auto' }}>
         {low.length > 0 && <div style={{ padding: '12px 16px', background: '#ffebee', border: `2px solid ${RED}`, marginBottom: 18 }}><div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: RED, marginBottom: 6 }}>⚠ ESTOQUE BAIXO</div>{low.map(i => <div key={i.id} style={{ fontSize: 11, color: RED }}>• {i.name}: {i.qty} {i.unit} (mín. {i.min_qty})</div>)}</div>}
         <SecTitle>INGREDIENTES ({stockItems.length})</SecTitle>
-        {stockItems.map(item => { const isLow = item.qty <= item.min_qty; return (
+        {stockItems.map(item => { const isLow = item.min_qty > 0 && item.qty <= item.min_qty; return (
           <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '13px 16px', background: W, border: `2px solid ${isLow ? RED : '#e0d0ea'}`, marginBottom: 8 }}>
             <div>
               <div style={{ fontWeight: 600, fontSize: 13 }}>{item.name}</div>
