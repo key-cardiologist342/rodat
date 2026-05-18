@@ -1196,7 +1196,7 @@ function Categorias({ categorias, setCategorias }) {
   async function save() {
     if (!form.name) return
     setLoading(true)
-    const { data } = await supabase.from('categorias').insert({ name: form.name.toLowerCase().trim(), tipo: form.tipo }).select().single()
+    const { data } = await supabase.from('categorias').insert({ name: form.name.trim(), tipo: form.tipo }).select().single()
     if (data) setCategorias(prev => [...prev, data].sort((a,b) => a.name.localeCompare(b.name)))
     setForm({ name: '', tipo: 'produto' })
     setLoading(false)
