@@ -130,7 +130,7 @@ function Login({ onLogin }) {
   return (
     <div style={{ minHeight: '100vh', background: OFF, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'IBM Plex Mono', monospace" }}>
       <div style={{ background: W, border: `3px solid ${P}`, padding: '44px 48px', width: 380 }}>
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 32, color: P, marginBottom: 4 }}>Rodat</div>
+        <div style={{ fontFamily: "'Seasons', serif", fontSize: 32, color: P, marginBottom: 4 }}>Rodat</div>
         <div style={{ fontSize: 10, color: '#aaa', letterSpacing: 1, marginBottom: 32 }}>DOCES E CAFÉS — SISTEMA DE CAIXA</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <Input label="EMAIL" type="email" value={email} onChange={setEmail} placeholder="seu@email.com" autoFocus />
@@ -345,7 +345,7 @@ function EditProductModal({ product, onSave, onClose }) {
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ background: W, border: `3px solid ${P}`, padding: 28, width: 480, maxHeight: '90vh', overflowY: 'auto', fontFamily: "'IBM Plex Mono', monospace" }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: P }}>Editar Produto</div>
+          <div style={{ fontFamily: "'Seasons', serif", fontSize: 20, color: P }}>Editar Produto</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#aaa' }}>✕</button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -400,7 +400,7 @@ function Painel({ caixaAberto, fundoInicial, sales, stockItems, products, setScr
   return (
     <div style={{ padding: 24, overflowY: 'auto', flex: 1 }}>
       <div style={{ marginBottom: 20 }}>
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 28, color: P }}>Rodat Doces e Cafés</div>
+        <div style={{ fontFamily: "'Seasons', serif", fontSize: 28, color: P }}>Rodat Doces e Cafés</div>
         <div style={{ fontSize: 9, color: '#aaa', letterSpacing: 1, marginTop: 2 }}>{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()}</div>
       </div>
       {!caixaAberto && <div onClick={() => setScreen('caixa')} style={{ padding: '12px 18px', background: '#fff8e1', border: `2px solid ${AMBER}`, marginBottom: 16, fontSize: 12, fontWeight: 600, color: '#6d4c00', cursor: 'pointer' }}>⚠ Caixa não foi aberto hoje — clique para abrir</div>}
@@ -503,7 +503,7 @@ function CaixaModule({ caixaAberto, setCaixaAberto, fundoInicial, setFundoInicia
   if (!caixaAberto) return (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: OFF }}>
       <Card style={{ maxWidth: 380, width: '100%', padding: 32 }}>
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: P, marginBottom: 4 }}>Abertura de Caixa</div>
+        <div style={{ fontFamily: "'Seasons', serif", fontSize: 20, color: P, marginBottom: 4 }}>Abertura de Caixa</div>
         <p style={{ fontSize: 12, color: '#666', marginBottom: 20 }}>Informe o fundo de troco disponível para iniciar o dia.</p>
         <Input label="FUNDO INICIAL (R$)" type="number" value={inputFundo} onChange={setInputFundo} placeholder="0,00" autoFocus />
         <div style={{ marginTop: 16 }}><Btn full onClick={abrirCaixa} disabled={loading || !inputFundo}>{loading ? 'ABRINDO...' : 'ABRIR CAIXA'}</Btn></div>
@@ -513,7 +513,7 @@ function CaixaModule({ caixaAberto, setCaixaAberto, fundoInicial, setFundoInicia
 
   if (showFechamento && !showRelatorio) return (
     <div style={{ flex: 1, overflowY: 'auto', padding: 28 }}>
-      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, color: P, marginBottom: 4 }}>Fechamento de Caixa</div>
+      <div style={{ fontFamily: "'Seasons', serif", fontSize: 22, color: P, marginBottom: 4 }}>Fechamento de Caixa</div>
       <p style={{ fontSize: 12, color: '#666', marginBottom: 24 }}>Confira os valores com a maquininha.</p>
       <div style={{ background: W, border: `2px solid #e0d0ea`, marginBottom: 24 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', background: P, color: W, padding: '10px 16px', fontSize: 9, fontWeight: 700, letterSpacing: 1, gap: 8 }}>
@@ -537,7 +537,7 @@ function CaixaModule({ caixaAberto, setCaixaAberto, fundoInicial, setFundoInicia
 
   if (showRelatorio) return (
     <div style={{ flex: 1, overflowY: 'auto', padding: 28 }}>
-      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, color: P, marginBottom: 20 }}>Relatório de Fechamento</div>
+      <div style={{ fontFamily: "'Seasons', serif", fontSize: 22, color: P, marginBottom: 20 }}>Relatório de Fechamento</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px,1fr))', gap: 12, marginBottom: 20 }}>
         {[{ l: 'FUNDO INICIAL', v: fmt(fundoInicial) }, { l: 'DINHEIRO EM CAIXA', v: fmt(dinheiroEmCaixa), h: true }, { l: 'TOTAL FATURADO', v: fmt(totalDia) }, { l: 'TICKET MÉDIO', v: fmt(ticketMedio) }, { l: 'SANGRIAS', v: fmt(totalSangrias) }, { l: 'SUPRIMENTOS', v: fmt(totalSuprimentos) }].map(c => (
           <Card key={c.l} style={{ borderLeft: `4px solid ${c.h ? GREEN : P}` }}><div style={{ fontSize: 8, letterSpacing: 1.5, color: '#888', marginBottom: 4 }}>{c.l}</div><div style={{ fontSize: 20, fontWeight: 700, color: c.h ? GREEN : P }}>{c.v}</div></Card>
@@ -734,7 +734,24 @@ function MesasModule({ products, clients, onSale, mesas, setMesas, mesaAtiva, se
 
 function Historico({ sales }) {
   const filter = useDateFilter()
-  const filtered = sales.filter(v => v.date >= filter.from && v.date <= filter.to)
+
+  // Normaliza a data da venda — pode vir como '2025-05-16' ou '2025-05-16T...'
+  const getDate = (v) => {
+    if (!v.date) return ''
+    return String(v.date).slice(0, 10)
+  }
+
+  const filtered = sales.filter(v => {
+    const d = getDate(v)
+    return d >= filter.from && d <= filter.to
+  })
+
+  const fmtDate = (dateStr) => {
+    if (!dateStr) return ''
+    const [y, m, d] = String(dateStr).slice(0, 10).split('-')
+    return `${d}/${m}/${y}`
+  }
+
   return (
     <div style={{ padding: 24, flex: 1, overflowY: 'auto' }}>
       <DateFilterBar filter={filter} />
@@ -745,12 +762,18 @@ function Historico({ sales }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               <div style={{ fontWeight: 700, fontSize: 15, color: P }}>{fmt(v.total)}</div>
-              <div style={{ fontSize: 10, color: '#888', marginTop: 2 }}>{v.time} · {PAYMENT_METHODS.find(m => m.key === v.payment)?.label} · {v.items_count} itens · {v.origin === 'mesa' ? `Mesa ${v.mesa}` : 'Balcão'}</div>
+              <div style={{ fontSize: 10, color: '#888', marginTop: 2 }}>
+                {fmtDate(v.date)} · {v.time} · {PAYMENT_METHODS.find(m => m.key === v.payment)?.label} · {v.items_count} {v.items_count === 1 ? 'item' : 'itens'} · {v.origin === 'mesa' ? `Mesa ${v.mesa}` : 'Balcão'}
+              </div>
             </div>
           </div>
           {v.itens && v.itens.length > 0 && (
             <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${OFF}`, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {v.itens.map((i, idx) => <span key={idx} style={{ fontSize: 10, color: '#666', background: OFF, padding: '2px 8px' }}>{i.name} ×{i.qty}</span>)}
+              {v.itens.map((i, idx) => (
+                <span key={idx} style={{ fontSize: 10, color: '#666', background: OFF, padding: '2px 8px' }}>
+                  {i.name} ×{i.qty} — {fmt(i.price * i.qty)}
+                </span>
+              ))}
             </div>
           )}
         </div>
@@ -1168,7 +1191,7 @@ export default function App() {
     <div style={{ fontFamily: "'IBM Plex Mono', monospace", background: OFF, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ background: P, color: W, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 22px', height: 50, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, letterSpacing: 1 }}>Rodat</span>
+          <span style={{ fontFamily: "'Seasons', serif", fontSize: 22, letterSpacing: 1 }}>Rodat</span>
           <span style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.3)' }} />
           <span style={{ fontSize: 9, opacity: 0.6, letterSpacing: 1 }}>DOCES E CAFÉS</span>
         </div>
