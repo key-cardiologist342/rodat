@@ -31,7 +31,10 @@ const NAV = [
 ]
 
 const fmt = (v) => `R$ ${Number(v || 0).toFixed(2).replace('.', ',')}`
-const todayStr = () => new Date().toISOString().split('T')[0]
+const todayStr = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+}
 const ptsEarned = (total) => Math.floor(total / 10)
 
 // ─── Shared UI ────────────────────────────────────────────────────────────────
