@@ -84,7 +84,7 @@ function useDateFilter() {
   function applyPreset(p) {
     setPreset(p)
     const now = new Date()
-    const pad = d => d.toISOString().split('T')[0]
+    const pad = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
     if (p === 'hoje')   { setFrom(pad(now)); setTo(pad(now)) }
     if (p === 'ontem')  { const d = new Date(now); d.setDate(d.getDate()-1); setFrom(pad(d)); setTo(pad(d)) }
     if (p === 'semana') { const d = new Date(now); d.setDate(d.getDate()-6); setFrom(pad(d)); setTo(pad(now)) }
@@ -131,7 +131,7 @@ function Login({ onLogin }) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: OFF, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', monospace" }}>
+    <div style={{ minHeight: '100vh', background: OFF, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', sans-serif" }}>
       <div style={{ background: W, border: `3px solid ${P}`, padding: '44px 48px', width: 380 }}>
         <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 32, color: P, marginBottom: 4 }}>Rodat</div>
         <div style={{ fontSize: 10, color: '#aaa', letterSpacing: 1, marginBottom: 32 }}>DOCES E CAFÉS — SISTEMA DE CAIXA</div>
@@ -346,7 +346,7 @@ function EditProductModal({ product, onSave, onClose }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ background: W, border: `3px solid ${P}`, padding: 28, width: 480, maxHeight: '90vh', overflowY: 'auto', fontFamily: "'DM Sans', monospace" }}>
+      <div style={{ background: W, border: `3px solid ${P}`, padding: 28, width: 480, maxHeight: '90vh', overflowY: 'auto', fontFamily: "'DM Sans', sans-serif" }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: P }}>Editar Produto</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#aaa' }}>✕</button>
@@ -838,7 +838,7 @@ function Faturamento({ sales }) {
   const last7 = Array.from({ length: 7 }, (_, i) => {
     const d = new Date()
     d.setDate(d.getDate() - (6 - i))
-    return d.toISOString().split('T')[0]
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
   })
   const dayLabels = last7.map(d => { const [,, dd] = d.split('-'); return dd + '/' + d.split('-')[1] })
   const dayRevenue = last7.map(day => sales.filter(v => getDate(v) === day).reduce((s, v) => s + v.total, 0))
@@ -1342,11 +1342,11 @@ export default function App() {
     onSuccess()
   }
 
-  if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', monospace", color: P, fontSize: 12, letterSpacing: 1 }}>CARREGANDO...</div>
+  if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', sans-serif", color: P, fontSize: 12, letterSpacing: 1 }}>CARREGANDO...</div>
   if (!session) return <Login onLogin={() => {}} />
 
   return (
-    <div style={{ fontFamily: "'DM Sans', monospace", background: OFF, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ fontFamily: "'DM Sans', sans-serif", background: OFF, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ background: P, color: W, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 22px', height: 50, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, letterSpacing: 1 }}>Rodat</span>
