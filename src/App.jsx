@@ -236,6 +236,7 @@ function PaymentPanel({ total, onConfirm, onBack, clients }) {
   const [phone, setPhone] = useState('')
   const [foundClient, setFoundClient] = useState(null)
   const [usePoints, setUsePoints] = useState(false)
+  const [confirming, setConfirming] = useState(false)
 
   const cashVal = parseFloat(cash) || 0
   const pointDiscount = usePoints && foundClient && foundClient !== 'not_found' ? Math.min(foundClient.points, Math.floor(total)) : 0
@@ -293,7 +294,7 @@ function PaymentPanel({ total, onConfirm, onBack, clients }) {
       </div>
       <div style={{ borderTop: `2px solid ${P}` }}>
         <button onClick={onBack} style={{ width: '100%', padding: '11px', fontSize: 10, fontWeight: 700, letterSpacing: 1, background: 'transparent', color: P, border: 'none', borderBottom: `1px solid ${OFF}`, cursor: 'pointer', fontFamily: 'inherit' }}>← VOLTAR</button>
-        <button disabled={!canConfirm} onClick={() => onConfirm({ payment, finalTotal, change, foundClient: foundClient !== 'not_found' ? foundClient : null, pointsEarned: ptsEarned(finalTotal), pointsUsed: pointDiscount, usePoints })} style={{ width: '100%', padding: '18px', fontSize: 13, fontWeight: 700, letterSpacing: 2, background: canConfirm ? P : '#ccc', color: W, border: 'none', cursor: canConfirm ? 'pointer' : 'not-allowed', fontFamily: 'inherit' }}>CONFIRMAR PAGAMENTO</button>
+        <button disabled={!canConfirm} onClick={() => { if (confirming) return; setConfirming(true); onConfirm({ payment, finalTotal, change, foundClient: foundClient !== 'not_found' ? foundClient : null, pointsEarned: ptsEarned(finalTotal), pointsUsed: pointDiscount, usePoints }) }} style={{ width: '100%', padding: '18px', fontSize: 13, fontWeight: 700, letterSpacing: 2, background: canConfirm ? P : '#ccc', color: W, border: 'none', cursor: canConfirm ? 'pointer' : 'not-allowed', fontFamily: 'inherit' }}>CONFIRMAR PAGAMENTO</button>
       </div>
     </div>
   )
