@@ -130,7 +130,7 @@ function Login({ onLogin }) {
   return (
     <div style={{ minHeight: '100vh', background: OFF, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', monospace" }}>
       <div style={{ background: W, border: `3px solid ${P}`, padding: '44px 48px', width: 380 }}>
-        <div style={{ fontFamily: "'Seasons', serif", fontSize: 32, color: P, marginBottom: 4 }}>Rodat</div>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 32, color: P, marginBottom: 4 }}>Rodat</div>
         <div style={{ fontSize: 10, color: '#aaa', letterSpacing: 1, marginBottom: 32 }}>DOCES E CAFÉS — SISTEMA DE CAIXA</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <Input label="EMAIL" type="email" value={email} onChange={setEmail} placeholder="seu@email.com" autoFocus />
@@ -345,7 +345,7 @@ function EditProductModal({ product, onSave, onClose }) {
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ background: W, border: `3px solid ${P}`, padding: 28, width: 480, maxHeight: '90vh', overflowY: 'auto', fontFamily: "'DM Sans', monospace" }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div style={{ fontFamily: "'Seasons', serif", fontSize: 20, color: P }}>Editar Produto</div>
+          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: P }}>Editar Produto</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#aaa' }}>✕</button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -400,7 +400,7 @@ function Painel({ caixaAberto, fundoInicial, sales, stockItems, products, setScr
   return (
     <div style={{ padding: 24, overflowY: 'auto', flex: 1 }}>
       <div style={{ marginBottom: 20 }}>
-        <div style={{ fontFamily: "'Seasons', serif", fontSize: 28, color: P }}>Rodat Doces e Cafés</div>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 28, color: P }}>Rodat Doces e Cafés</div>
         <div style={{ fontSize: 9, color: '#aaa', letterSpacing: 1, marginTop: 2 }}>{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()}</div>
       </div>
       {!caixaAberto && <div onClick={() => setScreen('caixa')} style={{ padding: '12px 18px', background: '#fff8e1', border: `2px solid ${AMBER}`, marginBottom: 16, fontSize: 12, fontWeight: 600, color: '#6d4c00', cursor: 'pointer' }}>⚠ Caixa não foi aberto hoje — clique para abrir</div>}
@@ -503,7 +503,7 @@ function CaixaModule({ caixaAberto, setCaixaAberto, fundoInicial, setFundoInicia
   if (!caixaAberto) return (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: OFF }}>
       <Card style={{ maxWidth: 380, width: '100%', padding: 32 }}>
-        <div style={{ fontFamily: "'Seasons', serif", fontSize: 20, color: P, marginBottom: 4 }}>Abertura de Caixa</div>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: P, marginBottom: 4 }}>Abertura de Caixa</div>
         <p style={{ fontSize: 12, color: '#666', marginBottom: 20 }}>Informe o fundo de troco disponível para iniciar o dia.</p>
         <Input label="FUNDO INICIAL (R$)" type="number" value={inputFundo} onChange={setInputFundo} placeholder="0,00" autoFocus />
         <div style={{ marginTop: 16 }}><Btn full onClick={abrirCaixa} disabled={loading || !inputFundo}>{loading ? 'ABRINDO...' : 'ABRIR CAIXA'}</Btn></div>
@@ -513,7 +513,7 @@ function CaixaModule({ caixaAberto, setCaixaAberto, fundoInicial, setFundoInicia
 
   if (showFechamento && !showRelatorio) return (
     <div style={{ flex: 1, overflowY: 'auto', padding: 28 }}>
-      <div style={{ fontFamily: "'Seasons', serif", fontSize: 22, color: P, marginBottom: 4 }}>Fechamento de Caixa</div>
+      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, color: P, marginBottom: 4 }}>Fechamento de Caixa</div>
       <p style={{ fontSize: 12, color: '#666', marginBottom: 24 }}>Confira os valores com a maquininha.</p>
       <div style={{ background: W, border: `2px solid #e0d0ea`, marginBottom: 24 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', background: P, color: W, padding: '10px 16px', fontSize: 9, fontWeight: 700, letterSpacing: 1, gap: 8 }}>
@@ -537,7 +537,7 @@ function CaixaModule({ caixaAberto, setCaixaAberto, fundoInicial, setFundoInicia
 
   if (showRelatorio) return (
     <div style={{ flex: 1, overflowY: 'auto', padding: 28 }}>
-      <div style={{ fontFamily: "'Seasons', serif", fontSize: 22, color: P, marginBottom: 20 }}>Relatório de Fechamento</div>
+      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, color: P, marginBottom: 20 }}>Relatório de Fechamento</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px,1fr))', gap: 12, marginBottom: 20 }}>
         {[{ l: 'FUNDO INICIAL', v: fmt(fundoInicial) }, { l: 'DINHEIRO EM CAIXA', v: fmt(dinheiroEmCaixa), h: true }, { l: 'TOTAL FATURADO', v: fmt(totalDia) }, { l: 'TICKET MÉDIO', v: fmt(ticketMedio) }, { l: 'SANGRIAS', v: fmt(totalSangrias) }, { l: 'SUPRIMENTOS', v: fmt(totalSuprimentos) }].map(c => (
           <Card key={c.l} style={{ borderLeft: `4px solid ${c.h ? GREEN : P}` }}><div style={{ fontSize: 8, letterSpacing: 1.5, color: '#888', marginBottom: 4 }}>{c.l}</div><div style={{ fontSize: 20, fontWeight: 700, color: c.h ? GREEN : P }}>{c.v}</div></Card>
@@ -784,7 +784,12 @@ function Historico({ sales }) {
 
 function Faturamento({ sales }) {
   const filter = useDateFilter()
-  const filtered = sales.filter(v => v.date >= filter.from && v.date <= filter.to)
+  const [sortCol, setSortCol] = useState('revenue')
+  const [sortDir, setSortDir] = useState('desc')
+
+  const getDate = (v) => v.date ? String(v.date).slice(0, 10) : ''
+  const filtered = sales.filter(v => { const d = getDate(v); return d >= filter.from && d <= filter.to })
+
   const itemSummary = {}
   filtered.forEach(v => v.itens && v.itens.forEach(i => {
     const k = i.produto_id || i.name
@@ -794,37 +799,139 @@ function Faturamento({ sales }) {
     itemSummary[k].costInsumos += (i.cost_insumos || 0) * i.qty
     itemSummary[k].costProd += (i.cost_prod || 0) * i.qty
   }))
-  const totRevenue = Object.values(itemSummary).reduce((s, i) => s + i.revenue, 0)
-  const totInsumos = Object.values(itemSummary).reduce((s, i) => s + i.costInsumos, 0)
-  const totProd = Object.values(itemSummary).reduce((s, i) => s + i.costProd, 0)
+
+  const items = Object.values(itemSummary).map(i => ({ ...i, lucro: i.revenue - i.costInsumos - i.costProd }))
+  const sorted = [...items].sort((a, b) => {
+    const av = sortCol === 'name' ? a.name : a[sortCol]
+    const bv = sortCol === 'name' ? b.name : b[sortCol]
+    if (typeof av === 'string') return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av)
+    return sortDir === 'asc' ? av - bv : bv - av
+  })
+
+  const totRevenue = items.reduce((s, i) => s + i.revenue, 0)
+  const totInsumos = items.reduce((s, i) => s + i.costInsumos, 0)
+  const totProd = items.reduce((s, i) => s + i.costProd, 0)
   const totLucro = totRevenue - totInsumos - totProd
+
+  function toggleSort(col) {
+    if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortCol(col); setSortDir('desc') }
+  }
+
+  function SortArrow({ col }) {
+    if (sortCol !== col) return <span style={{ opacity: 0.3, marginLeft: 4 }}>↕</span>
+    return <span style={{ marginLeft: 4 }}>{sortDir === 'asc' ? '↑' : '↓'}</span>
+  }
+
+  function ColHeader({ col, label, align = 'right' }) {
+    return (
+      <span onClick={() => toggleSort(col)} style={{ textAlign: align, cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: align === 'right' ? 'flex-end' : 'flex-start', gap: 2 }}>
+        {label}<SortArrow col={col} />
+      </span>
+    )
+  }
+
+  // Gráfico — últimos 7 dias
+  const last7 = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date()
+    d.setDate(d.getDate() - (6 - i))
+    return d.toISOString().split('T')[0]
+  })
+  const dayLabels = last7.map(d => { const [,, dd] = d.split('-'); return dd + '/' + d.split('-')[1] })
+  const dayRevenue = last7.map(day => sales.filter(v => getDate(v) === day).reduce((s, v) => s + v.total, 0))
+  const dayLucro = last7.map(day => {
+    const daySales = sales.filter(v => getDate(v) === day)
+    return daySales.reduce((s, v) => {
+      if (!v.itens) return s
+      return s + v.itens.reduce((ss, i) => ss + (i.price - (i.cost_insumos || 0) - (i.cost_prod || 0)) * i.qty, 0)
+    }, 0)
+  })
+
+  // Horário de pico
+  const hourMap = {}
+  filtered.forEach(v => {
+    const h = v.time ? parseInt(v.time.split(':')[0]) : null
+    if (h === null) return
+    if (!hourMap[h]) hourMap[h] = { vendas: 0, revenue: 0 }
+    hourMap[h].vendas += 1
+    hourMap[h].revenue += v.total
+  })
+  const hours = Object.keys(hourMap).sort((a, b) => parseInt(a) - parseInt(b))
+  const hourVendas = hours.map(h => hourMap[h].vendas)
+  const maxVendas = Math.max(...hourVendas, 1)
+  const rankingHoras = [...hours].sort((a, b) => hourMap[b].vendas - hourMap[a].vendas).slice(0, 5)
+
   return (
     <div style={{ padding: 24, flex: 1, overflowY: 'auto' }}>
       <DateFilterBar filter={filter} />
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px,1fr))', gap: 12, marginBottom: 24 }}>
         {[{ l: 'RECEITA TOTAL', v: fmt(totRevenue), h: true }, { l: 'CUSTO INSUMOS', v: fmt(totInsumos) }, { l: 'CUSTO PRODUÇÃO', v: fmt(totProd) }, { l: 'LUCRO TOTAL', v: fmt(totLucro), g: true }].map(c => (
-          <Card key={c.l} style={{ borderLeft: `4px solid ${c.h ? P : c.g ? GREEN : '#ddd'}` }}><div style={{ fontSize: 8, letterSpacing: 1.5, color: '#888', marginBottom: 4 }}>{c.l}</div><div style={{ fontSize: 20, fontWeight: 700, color: c.h ? P : c.g ? GREEN : DARK }}>{c.v}</div></Card>
+          <Card key={c.l} style={{ borderLeft: `4px solid ${c.h ? P : c.g ? GREEN : '#ddd'}` }}>
+            <div style={{ fontSize: 8, letterSpacing: 1.5, color: '#888', marginBottom: 4 }}>{c.l}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: c.h ? P : c.g ? GREEN : DARK }}>{c.v}</div>
+          </Card>
         ))}
       </div>
+
       <SecTitle>POR FORMA DE PAGAMENTO</SecTitle>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10, marginBottom: 24 }}>
         {PAYMENT_METHODS.map(m => { const val = filtered.filter(v => v.payment === m.key).reduce((s, v) => s + v.total, 0); return <Card key={m.key}><div style={{ fontSize: 8, letterSpacing: 1, color: '#888', marginBottom: 4 }}>{m.label}</div><div style={{ fontSize: 15, fontWeight: 700, color: P }}>{fmt(val)}</div></Card> })}
       </div>
-      <SecTitle>DETALHAMENTO POR PRODUTO</SecTitle>
-      <div style={{ background: W, border: `2px solid #e0d0ea` }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 0.5fr 1fr 1fr 1fr 1fr', background: P, color: W, padding: '9px 14px', fontSize: 8, fontWeight: 700, letterSpacing: 1, gap: 8 }}>
-          <span>PRODUTO</span><span style={{ textAlign: 'right' }}>QTD</span><span style={{ textAlign: 'right' }}>RECEITA</span><span style={{ textAlign: 'right' }}>INSUMOS</span><span style={{ textAlign: 'right' }}>PRODUÇÃO</span><span style={{ textAlign: 'right' }}>LUCRO</span>
+
+      <SecTitle>FATURAMENTO — ÚLTIMOS 7 DIAS</SecTitle>
+      <div style={{ display: 'flex', gap: 16, marginBottom: 8, fontSize: 11, color: '#888' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 10, background: P, display: 'inline-block' }}></span>Faturamento</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 2, background: GREEN, display: 'inline-block' }}></span>Lucro</span>
+      </div>
+      <div id="fat7wrap" style={{ position: 'relative', width: '100%', height: 200, marginBottom: 28 }}>
+        <canvas id="chartFat7" role="img" aria-label="Faturamento dos últimos 7 dias"></canvas>
+      </div>
+
+      {hours.length > 0 && <>
+        <SecTitle>HORÁRIO DE PICO</SecTitle>
+        <div style={{ display: 'flex', gap: 16, marginBottom: 8, fontSize: 11, color: '#888' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 10, background: P, display: 'inline-block' }}></span>Nº de vendas por hora</span>
         </div>
-        {Object.values(itemSummary).length === 0 && <div style={{ padding: 16, fontSize: 12, color: '#bbb' }}>Nenhuma venda no período.</div>}
-        {Object.values(itemSummary).map((i, idx) => { const lucro = i.revenue - i.costInsumos - i.costProd; return (
+        <div style={{ position: 'relative', width: '100%', height: 160, marginBottom: 16 }}>
+          <canvas id="chartPico" role="img" aria-label="Vendas por hora do dia"></canvas>
+        </div>
+        <div style={{ background: W, border: `2px solid #e0d0ea`, marginBottom: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2rem 1fr 1fr 1fr', background: P, color: W, padding: '8px 14px', fontSize: 8, fontWeight: 700, letterSpacing: 1, gap: 8 }}>
+            <span>#</span><span>HORÁRIO</span><span>VENDAS</span><span>FATURAMENTO</span>
+          </div>
+          {rankingHoras.map((h, i) => (
+            <div key={h} style={{ display: 'grid', gridTemplateColumns: '2rem 1fr 1fr 1fr', padding: '10px 14px', borderBottom: `1px solid ${OFF}`, fontSize: 12, gap: 8 }}>
+              <span style={{ color: '#aaa', fontWeight: 700 }}>{i+1}</span>
+              <span style={{ fontWeight: 600 }}>{h}h</span>
+              <span>{hourMap[h].vendas} venda{hourMap[h].vendas !== 1 ? 's' : ''}</span>
+              <span style={{ color: P, fontWeight: 700 }}>{fmt(hourMap[h].revenue)}</span>
+            </div>
+          ))}
+        </div>
+      </>}
+
+      <SecTitle>DETALHAMENTO POR PRODUTO</SecTitle>
+      <div style={{ background: W, border: `2px solid #e0d0ea`, marginBottom: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 0.5fr 1fr 1fr 1fr 1fr', background: P, color: W, padding: '9px 14px', fontSize: 8, fontWeight: 700, letterSpacing: 1, gap: 8 }}>
+          <ColHeader col="name" label="PRODUTO" align="left" />
+          <ColHeader col="qty" label="QTD" />
+          <ColHeader col="revenue" label="RECEITA" />
+          <ColHeader col="costInsumos" label="INSUMOS" />
+          <ColHeader col="costProd" label="PRODUÇÃO" />
+          <ColHeader col="lucro" label="LUCRO" />
+        </div>
+        {sorted.length === 0 && <div style={{ padding: 16, fontSize: 12, color: '#bbb' }}>Nenhuma venda no período.</div>}
+        {sorted.map((i, idx) => (
           <div key={idx} style={{ display: 'grid', gridTemplateColumns: '2fr 0.5fr 1fr 1fr 1fr 1fr', padding: '10px 14px', borderBottom: `1px solid ${OFF}`, fontSize: 11, gap: 8 }}>
-            <span style={{ fontWeight: 600 }}>{i.name}</span><span style={{ textAlign: 'right' }}>{i.qty}</span>
+            <span style={{ fontWeight: 600 }}>{i.name}</span>
+            <span style={{ textAlign: 'right' }}>{i.qty}</span>
             <span style={{ textAlign: 'right', color: P, fontWeight: 700 }}>{fmt(i.revenue)}</span>
             <span style={{ textAlign: 'right', color: '#888' }}>{fmt(i.costInsumos)}</span>
             <span style={{ textAlign: 'right', color: '#888' }}>{fmt(i.costProd)}</span>
-            <span style={{ textAlign: 'right', color: GREEN, fontWeight: 700 }}>{fmt(lucro)}</span>
+            <span style={{ textAlign: 'right', color: GREEN, fontWeight: 700 }}>{fmt(i.lucro)}</span>
           </div>
-        ) })}
+        ))}
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 0.5fr 1fr 1fr 1fr 1fr', padding: '11px 14px', background: OFF, fontSize: 11, gap: 8, fontWeight: 700 }}>
           <span>TOTAL</span><span />
           <span style={{ textAlign: 'right', color: P }}>{fmt(totRevenue)}</span>
@@ -833,8 +940,45 @@ function Faturamento({ sales }) {
           <span style={{ textAlign: 'right', color: GREEN }}>{fmt(totLucro)}</span>
         </div>
       </div>
+
+      <ChartsFaturamento dayLabels={dayLabels} dayRevenue={dayRevenue} dayLucro={dayLucro} hours={hours} hourVendas={hourVendas} maxVendas={maxVendas} />
     </div>
   )
+}
+
+function ChartsFaturamento({ dayLabels, dayRevenue, dayLucro, hours, hourVendas, maxVendas }) {
+  useEffect(() => {
+    let c1, c2
+    const t = setTimeout(() => {
+      const el1 = document.getElementById('chartFat7')
+      const el2 = document.getElementById('chartPico')
+      if (el1) {
+        c1 = new window.ChartJS(el1, {
+          type: 'bar',
+          data: {
+            labels: dayLabels,
+            datasets: [
+              { label: 'Faturamento', data: dayRevenue, backgroundColor: '#552072', borderRadius: 3, order: 2 },
+              { label: 'Lucro', data: dayLucro, type: 'line', borderColor: '#2e7d32', backgroundColor: 'transparent', pointBackgroundColor: '#2e7d32', pointRadius: 3, borderWidth: 2, tension: 0.3, order: 1 }
+            ]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { callback: v => 'R$' + v } } } }
+        })
+      }
+      if (el2 && hours.length > 0) {
+        c2 = new window.ChartJS(el2, {
+          type: 'bar',
+          data: {
+            labels: hours.map(h => h + 'h'),
+            datasets: [{ label: 'Vendas', data: hourVendas, backgroundColor: hourVendas.map(v => v === maxVendas ? '#552072' : 'rgba(85,32,114,0.3)'), borderRadius: 3 }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { stepSize: 1 } } } }
+        })
+      }
+    }, 100)
+    return () => { clearTimeout(t); c1?.destroy(); c2?.destroy() }
+  }, [dayLabels, dayRevenue, dayLucro, hours, hourVendas, maxVendas])
+  return null
 }
 
 function Clientes({ clients, reload }) {
@@ -1124,6 +1268,17 @@ export default function App() {
   const [fundoInicial, setFundoInicial] = useState(0)
 
   useEffect(() => {
+    if (!window.ChartJS) {
+      const script = document.createElement('script')
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js'
+      script.onload = () => { window.ChartJS = window.Chart }
+      document.head.appendChild(script)
+    } else {
+      window.ChartJS = window.Chart
+    }
+  }, [])
+
+  useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => { setSession(session); setLoading(false) })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setSession(session))
     return () => subscription.unsubscribe()
@@ -1191,7 +1346,7 @@ export default function App() {
     <div style={{ fontFamily: "'DM Sans', monospace", background: OFF, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ background: P, color: W, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 22px', height: 50, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <span style={{ fontFamily: "'Seasons', serif", fontSize: 22, letterSpacing: 1 }}>Rodat</span>
+          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, letterSpacing: 1 }}>Rodat</span>
           <span style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.3)' }} />
           <span style={{ fontSize: 9, opacity: 0.6, letterSpacing: 1 }}>DOCES E CAFÉS</span>
         </div>
