@@ -642,39 +642,91 @@ function PDVModule({ products, setProducts, clients, onSale }) {
   )
 }
 
-function MesasModule({ products, clients, onSale }) {
-  const [mesas, setMesas] = useState({})
-  const [active, setActive] = useState(null)
-  const [step, setStep] = useState('mesas')
+function MesasModule({ products, clients, onSale, mesas, setMesas, mesaAtiva, setMesaAtiva, mesaStep, setMesaStep, mesasCarts, setMesasCarts }) {
   const [result, setResult] = useState(null)
-  const { cart, add, changeQty, clear, total, count } = useCart()
-  function abrirMesa(n) { if (!mesas[n]) setMesas(m => ({ ...m, [n]: { hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) } })); setActive(n); setStep('pedido') }
-  function handleConfirm(res) { setMesas(m => { const c = { ...m }; delete c[active]; return c }); onSale({ ...res, items: count, origin: 'mesa', mesa: active, cart }, () => { setResult(res); clear(); setActive(null); setStep('success') }) }
-  if (step === 'success') return <SuccessScreen result={result} onNew={() => setStep('mesas')} />
-  if (step === 'mesas') return (
+
+  const cart = mesaAtiva ? (mesasCarts[mesaAtiva] || []) : []
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0)
+  const count = cart.reduce((s, i) => s + i.qty, 0)
+
+  function addToCart(product) {
+    setMesasCarts(prev => {
+      const cur = prev[mesaAtiva] || []
+      const ex = cur.find(i => i.id === product.id)
+      const updated = ex
+        ? cur.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i)
+        : [...cur, { ...product, qty: 1 }]
+      return { ...prev, [mesaAtiva]: updated }
+    })
+  }
+
+  function changeQty(id, d) {
+    setMesasCarts(prev => {
+      const cur = prev[mesaAtiva] || []
+      const item = cur.find(i => i.id === id)
+      if (!item) return prev
+      const updated = item.qty + d <= 0
+        ? cur.filter(i => i.id !== id)
+        : cur.map(i => i.id === id ? { ...i, qty: i.qty + d } : i)
+      return { ...prev, [mesaAtiva]: updated }
+    })
+  }
+
+  function clearCart() {
+    setMesasCarts(prev => ({ ...prev, [mesaAtiva]: [] }))
+  }
+
+  function abrirMesa(n) {
+    if (!mesas[n]) setMesas(m => ({ ...m, [n]: { hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) } }))
+    setMesaAtiva(n)
+    setMesaStep('pedido')
+  }
+
+  function handleConfirm(res) {
+    onSale({ ...res, items: count, origin: 'mesa', mesa: mesaAtiva, cart }, () => {
+      setMesas(m => { const c = { ...m }; delete c[mesaAtiva]; return c })
+      setMesasCarts(prev => { const c = { ...prev }; delete c[mesaAtiva]; return c })
+      setResult(res)
+      setMesaAtiva(null)
+      setMesaStep('success')
+    })
+  }
+
+  if (mesaStep === 'success') return <SuccessScreen result={result} onNew={() => setMesaStep('mesas')} />
+
+  if (mesaStep === 'mesas') return (
     <div style={{ padding: 24, flex: 1 }}>
       <SecTitle>MESAS</SecTitle>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16, maxWidth: 680 }}>
-        {[1,2,3,4,5].map(n => { const aberta = !!mesas[n]; return (
-          <button key={n} onClick={() => abrirMesa(n)} style={{ padding: '28px 12px', border: `3px solid ${aberta ? P : '#ddd'}`, background: aberta ? P : W, color: aberta ? W : '#bbb', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'center' }}>
-            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, marginBottom: 6 }}>MESA</div>
-            <div style={{ fontSize: 38, fontWeight: 700 }}>{n}</div>
-            <div style={{ fontSize: 9, marginTop: 6, color: aberta ? '#e0c0f5' : '#ccc' }}>{aberta ? `Aberta ${mesas[n].hora}` : 'Livre'}</div>
-          </button>
-        ) })}
+        {[1,2,3,4,5].map(n => {
+          const aberta = !!mesas[n]
+          const itens = (mesasCarts[n] || []).reduce((s, i) => s + i.qty, 0)
+          return (
+            <button key={n} onClick={() => abrirMesa(n)} style={{ padding: '28px 12px', border: `3px solid ${aberta ? P : '#ddd'}`, background: aberta ? P : W, color: aberta ? W : '#bbb', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'center' }}>
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, marginBottom: 6 }}>MESA</div>
+              <div style={{ fontSize: 38, fontWeight: 700 }}>{n}</div>
+              <div style={{ fontSize: 9, marginTop: 6, color: aberta ? '#e0c0f5' : '#ccc' }}>
+                {aberta ? `${mesas[n].hora} · ${itens} item${itens !== 1 ? 's' : ''}` : 'Livre'}
+              </div>
+            </button>
+          )
+        })}
       </div>
     </div>
   )
+
   return (
     <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-      <ProductGrid products={products} cart={cart} onAdd={add} />
-      {step === 'pedido'
+      <ProductGrid products={products} cart={cart} onAdd={addToCart} />
+      {mesaStep === 'pedido'
         ? <div style={{ width: 300, background: W, display: 'flex', flexDirection: 'column', borderLeft: `3px solid ${P}` }}>
-            <div style={{ padding: '11px 14px', borderBottom: `2px solid ${P}`, fontSize: 9, fontWeight: 700, letterSpacing: 1, color: P }}>MESA {active}</div>
-            <CartPanel cart={cart} changeQty={changeQty} clear={clear} total={total} count={count} onCheckout={() => setStep('pay')} />
-            <button onClick={() => { setActive(null); setStep('mesas') }} style={{ padding: '11px', fontSize: 10, fontWeight: 700, letterSpacing: 1, background: 'transparent', color: '#888', border: 'none', borderTop: `1px solid ${OFF}`, cursor: 'pointer', fontFamily: 'inherit' }}>← VOLTAR ÀS MESAS</button>
+            <div style={{ padding: '11px 14px', borderBottom: `2px solid ${P}`, fontSize: 9, fontWeight: 700, letterSpacing: 1, color: P }}>MESA {mesaAtiva}</div>
+            <CartPanel cart={cart} changeQty={changeQty} clear={clearCart} total={total} count={count} onCheckout={() => setMesaStep('pay')} />
+            <button onClick={() => { setMesaAtiva(null); setMesaStep('mesas') }} style={{ padding: '11px', fontSize: 10, fontWeight: 700, letterSpacing: 1, background: 'transparent', color: '#888', border: 'none', borderTop: `1px solid ${OFF}`, cursor: 'pointer', fontFamily: 'inherit' }}>← VOLTAR ÀS MESAS</button>
           </div>
-        : <div style={{ width: 360, background: W, display: 'flex', flexDirection: 'column', borderLeft: `3px solid ${P}` }}><PaymentPanel total={total} onConfirm={handleConfirm} onBack={() => setStep('pedido')} clients={clients} /></div>}
+        : <div style={{ width: 360, background: W, display: 'flex', flexDirection: 'column', borderLeft: `3px solid ${P}` }}>
+            <PaymentPanel total={total} onConfirm={handleConfirm} onBack={() => setMesaStep('pedido')} clients={clients} />
+          </div>}
     </div>
   )
 }
@@ -950,6 +1002,10 @@ export default function App() {
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
   const [screen, setScreen] = useState('painel')
+  const [mesas, setMesas] = useState({})
+  const [mesaAtiva, setMesaAtiva] = useState(null)
+  const [mesaStep, setMesaStep] = useState('mesas')
+  const [mesasCarts, setMesasCarts] = useState({})
 
   const [products, setProducts] = useState([])
   const [clients, setClients] = useState([])
@@ -1051,7 +1107,7 @@ export default function App() {
           {screen === 'painel'      && <Painel caixaAberto={caixaAberto} fundoInicial={fundoInicial} sales={sales} stockItems={stockItems} products={products} setScreen={setScreen} />}
           {screen === 'caixa'       && <CaixaModule caixaAberto={caixaAberto} setCaixaAberto={setCaixaAberto} fundoInicial={fundoInicial} setFundoInicial={setFundoInicial} sales={sales} movimentos={movimentos} reloadMovimentos={() => supabase.from('movimentos').select('*').eq('date', todayStr()).order('created_at').then(r => r.data && setMovimentos(r.data))} reloadCaixa={() => supabase.from('caixa').select('*').eq('date', todayStr()).single().then(r => r.data && (setCaixaAberto(r.data.aberto), setFundoInicial(r.data.fundo_inicial)))} />}
           {screen === 'pdv'         && <PDVModule products={products} setProducts={setProducts} clients={clients} onSale={handleSale} />}
-          {screen === 'mesas'       && <MesasModule products={products} clients={clients} onSale={handleSale} />}
+          {screen === 'mesas'       && <MesasModule products={products} clients={clients} onSale={handleSale} mesas={mesas} setMesas={setMesas} mesaAtiva={mesaAtiva} setMesaAtiva={setMesaAtiva} mesaStep={mesaStep} setMesaStep={setMesaStep} mesasCarts={mesasCarts} setMesasCarts={setMesasCarts} />}
           {screen === 'historico'   && <Historico sales={sales} />}
           {screen === 'faturamento' && <Faturamento sales={sales} />}
           {screen === 'clientes'    && <Clientes clients={clients} reload={() => supabase.from('clientes').select('*').order('name').then(r => r.data && setClients(r.data))} />}
