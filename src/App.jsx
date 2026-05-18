@@ -27,6 +27,7 @@ const NAV = [
   { key: "clientes",    label: "Clientes",    icon: "◉" },
   { key: "produtos",    label: "Produtos",    icon: "❖" },
   { key: "estoque",     label: "Estoque",     icon: "◧" },
+  { key: "categorias",  label: "Categorias",  icon: "◫" },
 ]
 
 const fmt = (v) => `R$ ${Number(v || 0).toFixed(2).replace('.', ',')}`
@@ -855,7 +856,7 @@ function Clientes({ clients, reload }) {
   )
 }
 
-function Produtos({ products, setProducts }) {
+function Produtos({ products, setProducts, categorias }) {
   const [form, setForm] = useState({ name: '', price: '', category: 'bolos', cost_insumos: '', cost_prod: '', qty: '', min_qty: '' })
   const [editProduct, setEditProduct] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -882,7 +883,7 @@ function Produtos({ products, setProducts }) {
         <SecTitle>NOVO PRODUTO</SecTitle>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
           <Input label="NOME" value={form.name} onChange={v => setForm(f => ({ ...f, name: v }))} placeholder="Nome do produto" />
-          <Field label="CATEGORIA"><select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} style={{ ...s.input }}><option value="bolos">Bolos</option><option value="doces">Doces</option><option value="bebidas">Bebidas</option></select></Field>
+          <Field label="CATEGORIA"><select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} style={{ ...s.input }}>{categorias.filter(c => c.tipo === 'produto' || c.tipo === 'ambos').map(c => <option key={c.id} value={c.name}>{c.name}</option>)}</select></Field>
           <Input label="PREÇO DE VENDA (R$)" type="number" value={form.price} onChange={v => setForm(f => ({ ...f, price: v }))} placeholder="0,00" />
           <Input label="CUSTO INSUMOS (R$)" type="number" value={form.cost_insumos} onChange={v => setForm(f => ({ ...f, cost_insumos: v }))} placeholder="0,00" />
           <Input label="CUSTO PRODUÇÃO (R$)" type="number" value={form.cost_prod} onChange={v => setForm(f => ({ ...f, cost_prod: v }))} placeholder="0,00" />
@@ -931,7 +932,7 @@ function Produtos({ products, setProducts }) {
   )
 }
 
-function Estoque({ stockItems, setStockItems }) {
+function Estoque({ stockItems, setStockItems, categorias }) {
   const [form, setForm] = useState({ name: '', unit: 'kg', qty: '', min: '' })
   const [editId, setEditId] = useState(null)
   const [editData, setEditData] = useState({ qty: '', min: '' })
@@ -994,6 +995,89 @@ function Estoque({ stockItems, setStockItems }) {
   )
 }
 
+
+// ─── CATEGORIAS ───────────────────────────────────────────────────────────────
+
+function Categorias({ categorias, setCategorias }) {
+  const [form, setForm] = useState({ name: '', tipo: 'produto' })
+  const [editId, setEditId] = useState(null)
+  const [editData, setEditData] = useState({ name: '', tipo: 'produto' })
+  const [loading, setLoading] = useState(false)
+
+  async function save() {
+    if (!form.name) return
+    setLoading(true)
+    const { data } = await supabase.from('categorias').insert({ name: form.name.toLowerCase().trim(), tipo: form.tipo }).select().single()
+    if (data) setCategorias(prev => [...prev, data].sort((a,b) => a.name.localeCompare(b.name)))
+    setForm({ name: '', tipo: 'produto' })
+    setLoading(false)
+  }
+
+  async function saveEdit(id) {
+    await supabase.from('categorias').update({ name: editData.name.toLowerCase().trim(), tipo: editData.tipo }).eq('id', id)
+    setCategorias(prev => prev.map(c => c.id === id ? { ...c, name: editData.name.toLowerCase().trim(), tipo: editData.tipo } : c))
+    setEditId(null)
+  }
+
+  async function remove(id) {
+    await supabase.from('categorias').delete().eq('id', id)
+    setCategorias(prev => prev.filter(c => c.id !== id))
+  }
+
+  const TIPO_LABEL = { produto: 'Produto', estoque: 'Estoque', ambos: 'Ambos' }
+  const TIPO_COLOR = { produto: P, estoque: GREEN, ambos: AMBER }
+
+  return (
+    <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <div style={{ width: 300, padding: 22, borderRight: `2px solid #e0d0ea`, background: W, overflowY: 'auto' }}>
+        <SecTitle>NOVA CATEGORIA</SecTitle>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <Input label="NOME" value={form.name} onChange={v => setForm(f => ({ ...f, name: v }))} placeholder="Ex: salgados" />
+          <Field label="TIPO">
+            <select value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))} style={{ ...s.input }}>
+              <option value="produto">Produto (cardápio)</option>
+              <option value="estoque">Estoque (ingredientes)</option>
+              <option value="ambos">Ambos</option>
+            </select>
+          </Field>
+          <Btn full onClick={save} disabled={loading || !form.name}>{loading ? 'SALVANDO...' : 'ADICIONAR CATEGORIA'}</Btn>
+        </div>
+      </div>
+      <div style={{ flex: 1, padding: 22, overflowY: 'auto' }}>
+        <SecTitle>CATEGORIAS ({categorias.length})</SecTitle>
+        {categorias.length === 0 && <div style={{ fontSize: 12, color: '#bbb' }}>Nenhuma categoria cadastrada.</div>}
+        {categorias.map(cat => (
+          <div key={cat.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '13px 16px', background: W, border: `2px solid #e0d0ea`, marginBottom: 8 }}>
+            {editId === cat.id ? (
+              <div style={{ display: 'flex', gap: 8, flex: 1, alignItems: 'center' }}>
+                <input value={editData.name} onChange={e => setEditData(d => ({ ...d, name: e.target.value }))} style={{ flex: 1, padding: '6px 10px', fontSize: 13, fontWeight: 600, border: `2px solid ${P}`, outline: 'none', fontFamily: 'inherit', background: OFF }} autoFocus />
+                <select value={editData.tipo} onChange={e => setEditData(d => ({ ...d, tipo: e.target.value }))} style={{ padding: '6px 10px', fontSize: 11, fontFamily: 'inherit', border: `2px solid ${P}`, outline: 'none', background: OFF }}>
+                  <option value="produto">Produto</option>
+                  <option value="estoque">Estoque</option>
+                  <option value="ambos">Ambos</option>
+                </select>
+                <button onClick={() => saveEdit(cat.id)} style={{ padding: '6px 12px', background: GREEN, color: W, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 10, fontWeight: 700 }}>OK</button>
+                <button onClick={() => setEditId(null)} style={{ padding: '6px 10px', background: 'transparent', color: '#888', border: `1px solid #ccc`, cursor: 'pointer', fontFamily: 'inherit', fontSize: 10 }}>✕</button>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 13 }}>{cat.name}</div>
+                  <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: TIPO_COLOR[cat.tipo], background: TIPO_COLOR[cat.tipo] + '18', padding: '2px 8px', marginTop: 4, display: 'inline-block' }}>{TIPO_LABEL[cat.tipo].toUpperCase()}</span>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={() => { setEditId(cat.id); setEditData({ name: cat.name, tipo: cat.tipo }) }} style={{ padding: '6px 14px', fontSize: 9, fontWeight: 700, letterSpacing: 1, fontFamily: 'inherit', cursor: 'pointer', border: `2px solid ${P}`, background: P, color: W }}>EDITAR</button>
+                  <button onClick={() => remove(cat.id)} style={{ padding: '6px 12px', fontSize: 9, fontWeight: 700, letterSpacing: 1, fontFamily: 'inherit', cursor: 'pointer', border: `2px solid ${RED}`, background: 'transparent', color: RED }}>EXCLUIR</button>
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // APP ROOT
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1012,6 +1096,7 @@ export default function App() {
   const [sales, setSales] = useState([])
   const [stockItems, setStockItems] = useState([])
   const [movimentos, setMovimentos] = useState([])
+  const [categorias, setCategorias] = useState([])
   const [caixaAberto, setCaixaAberto] = useState(false)
   const [fundoInicial, setFundoInicial] = useState(0)
 
@@ -1022,13 +1107,14 @@ export default function App() {
   }, [])
 
   const loadAll = useCallback(async () => {
-    const [p, c, v, e, m, cx] = await Promise.all([
+    const [p, c, v, e, m, cx, cat] = await Promise.all([
       supabase.from('produtos').select('*').order('category').order('name'),
       supabase.from('clientes').select('*').order('name'),
       supabase.from('vendas').select('*, itens:venda_itens(*)').order('created_at', { ascending: false }),
       supabase.from('estoque').select('*').order('name'),
       supabase.from('movimentos').select('*').eq('date', todayStr()).order('created_at'),
       supabase.from('caixa').select('*').eq('date', todayStr()).single(),
+      supabase.from('categorias').select('*').order('name'),
     ])
     if (p.data) setProducts(p.data)
     if (c.data) setClients(c.data)
@@ -1036,6 +1122,7 @@ export default function App() {
     if (e.data) setStockItems(e.data)
     if (m.data) setMovimentos(m.data)
     if (cx.data) { setCaixaAberto(cx.data.aberto); setFundoInicial(cx.data.fundo_inicial) }
+    if (cat.data) setCategorias(cat.data)
   }, [])
 
   useEffect(() => { if (session) loadAll() }, [session, loadAll])
@@ -1111,8 +1198,9 @@ export default function App() {
           {screen === 'historico'   && <Historico sales={sales} />}
           {screen === 'faturamento' && <Faturamento sales={sales} />}
           {screen === 'clientes'    && <Clientes clients={clients} reload={() => supabase.from('clientes').select('*').order('name').then(r => r.data && setClients(r.data))} />}
-          {screen === 'produtos'    && <Produtos products={products} setProducts={setProducts} />}
-          {screen === 'estoque'     && <Estoque stockItems={stockItems} setStockItems={setStockItems} />}
+          {screen === 'produtos'    && <Produtos products={products} setProducts={setProducts} categorias={categorias} />}
+          {screen === 'estoque'     && <Estoque stockItems={stockItems} setStockItems={setStockItems} categorias={categorias} />}
+          {screen === 'categorias'  && <Categorias categorias={categorias} setCategorias={setCategorias} />}
         </div>
       </div>
     </div>
