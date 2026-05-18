@@ -128,7 +128,7 @@ function Login({ onLogin }) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: OFF, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'IBM Plex Mono', monospace" }}>
+    <div style={{ minHeight: '100vh', background: OFF, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', monospace" }}>
       <div style={{ background: W, border: `3px solid ${P}`, padding: '44px 48px', width: 380 }}>
         <div style={{ fontFamily: "'Seasons', serif", fontSize: 32, color: P, marginBottom: 4 }}>Rodat</div>
         <div style={{ fontSize: 10, color: '#aaa', letterSpacing: 1, marginBottom: 32 }}>DOCES E CAFÉS — SISTEMA DE CAIXA</div>
@@ -343,7 +343,7 @@ function EditProductModal({ product, onSave, onClose }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ background: W, border: `3px solid ${P}`, padding: 28, width: 480, maxHeight: '90vh', overflowY: 'auto', fontFamily: "'IBM Plex Mono', monospace" }}>
+      <div style={{ background: W, border: `3px solid ${P}`, padding: 28, width: 480, maxHeight: '90vh', overflowY: 'auto', fontFamily: "'DM Sans', monospace" }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <div style={{ fontFamily: "'Seasons', serif", fontSize: 20, color: P }}>Editar Produto</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#aaa' }}>✕</button>
@@ -1184,11 +1184,11 @@ export default function App() {
     onSuccess()
   }
 
-  if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'IBM Plex Mono', monospace", color: P, fontSize: 12, letterSpacing: 1 }}>CARREGANDO...</div>
+  if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', monospace", color: P, fontSize: 12, letterSpacing: 1 }}>CARREGANDO...</div>
   if (!session) return <Login onLogin={() => {}} />
 
   return (
-    <div style={{ fontFamily: "'IBM Plex Mono', monospace", background: OFF, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ fontFamily: "'DM Sans', monospace", background: OFF, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ background: P, color: W, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 22px', height: 50, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <span style={{ fontFamily: "'Seasons', serif", fontSize: 22, letterSpacing: 1 }}>Rodat</span>
