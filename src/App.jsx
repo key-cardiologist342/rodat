@@ -1368,7 +1368,7 @@ export default function App() {
     <div style={{ fontFamily: "'DM Sans', sans-serif", background: OFF, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ background: P, color: W, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 22px', height: 50, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <img src="/logo.png" alt="" style={{ height: 30, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} /> 
+          <img src="/logo.png" alt="" style={{ height: 30, objectFit: 'contain' }} /> 
           <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, letterSpacing: 1 }}>Rodat</span>
           <span style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.3)' }} />
           <span style={{ fontSize: 9, opacity: 0.6, letterSpacing: 1 }}>DOCES E CAFÉS</span>
