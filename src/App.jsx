@@ -37,6 +37,71 @@ const todayStr = () => {
 }
 const ptsEarned = (total) => Math.floor(total / 10)
 
+// ─── Impressora térmica ESC/POS via Web USB ───────────────────────────────────
+
+async function imprimirRecibo({ cart, total, desconto = 0, mesa, pessoas = 0 }) {
+  const enc = new TextEncoder()
+  const ESC = (b) => new Uint8Array(b)
+  const t = (s) => enc.encode(s)
+  const div = () => enc.encode('-'.repeat(42) + '\n')
+  const now = new Date()
+  const data = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`
+  const hora = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
+  const subtotal = total + desconto
+  const chunks = [
+    ESC([0x1B,0x40]),
+    ESC([0x1B,0x61,0x01]), ESC([0x1D,0x21,0x11]), ESC([0x1B,0x45,0x01]),
+    t('RODAT\n'),
+    ESC([0x1D,0x21,0x00]), ESC([0x1B,0x45,0x00]),
+    t('Doces e Cafes\n'),
+    t('------------------------------------------\n'),
+    t(`${data}  ${hora}\n`),
+    t(mesa ? `Mesa ${mesa}\n` : 'Balcao\n'),
+    ESC([0x1B,0x61,0x00]),
+    div(),
+    ESC([0x1B,0x45,0x01]), t('ITEM                    QTD   VALOR\n'), ESC([0x1B,0x45,0x00]),
+    div(),
+    ...cart.map(item => {
+      const nome = item.name.length > 22 ? item.name.slice(0,22) : item.name.padEnd(22)
+      const qty = String(item.qty).padStart(3)
+      const val = `R$${(item.price*item.qty).toFixed(2).replace('.',',')}`
+      return t(`${nome} ${qty}  ${val}\n`)
+    }),
+    div(),
+    ...(desconto > 0 ? [
+      t(`${'Subtotal'.padEnd(30)}R$${subtotal.toFixed(2).replace('.',',')}\n`),
+      t(`${'Desconto'.padEnd(30)}- R$${desconto.toFixed(2).replace('.',',')}\n`),
+      div(),
+    ] : []),
+    ESC([0x1B,0x45,0x01]),
+    t(`${'TOTAL'.padEnd(30)}R$${total.toFixed(2).replace('.',',')}\n`),
+    ESC([0x1B,0x45,0x00]),
+    ...(pessoas > 1 ? [
+      div(),
+      t(`${'Por pessoa (' + pessoas + 'x)'.padEnd(30)}R$${(total/pessoas).toFixed(2).replace('.',',')}\n`),
+    ] : []),
+    div(),
+    ESC([0x1B,0x61,0x01]),
+    t('Obrigado pela preferencia!\n\n\n'),
+    ESC([0x1D,0x56,0x42,0x03]),
+  ]
+  const len = chunks.reduce((s,c) => s+c.length, 0)
+  const merged = new Uint8Array(len)
+  let off = 0
+  for (const c of chunks) { merged.set(c, off); off += c.length }
+  try {
+    const device = await navigator.usb.requestDevice({ filters: [] })
+    await device.open()
+    if (device.configuration === null) await device.selectConfiguration(1)
+    await device.claimInterface(0)
+    const ep = device.configuration.interfaces[0].alternate.endpoints.find(e => e.direction === 'out')
+    await device.transferOut(ep.endpointNumber, merged)
+    await device.close()
+  } catch(e) {
+    if (e.name !== 'NotFoundError') alert('Erro na impressora: ' + e.message)
+  }
+}
+
 // ─── Shared UI ────────────────────────────────────────────────────────────────
 
 const s = {
@@ -192,16 +257,12 @@ function ProductGrid({ products, cart, onAdd }) {
   )
 }
 
-function CartPanel({ cart, changeQty, clear, total, count, onCheckout }) {
-  const [descontoStr, setDescontoStr] = useState('')
-  const desconto = Math.min(parseFloat(descontoStr) || 0, total)
-  const totalFinal = Math.max(0, total - desconto)
-
+function CartPanel({ cart, changeQty, clear, total, count, onCheckout, onPrint, pessoasMesa = 0 }) {
   return (
     <div style={{ width: 300, background: W, display: 'flex', flexDirection: 'column', borderLeft: `3px solid ${P}` }}>
       <div style={{ padding: '11px 14px', borderBottom: `2px solid ${P}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontWeight: 700, fontSize: 9, letterSpacing: 1, color: P }}>ITENS DA VENDA</span>
-        {cart.length > 0 && <button onClick={() => { clear(); setDescontoStr('') }} style={{ fontSize: 9, color: RED, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}>LIMPAR</button>}
+        {cart.length > 0 && <button onClick={clear} style={{ fontSize: 9, color: RED, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}>LIMPAR</button>}
       </div>
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {cart.length === 0 && <div style={{ padding: 28, textAlign: 'center', color: '#bbb', fontSize: 11 }}>Nenhum item</div>}
@@ -224,19 +285,14 @@ function CartPanel({ cart, changeQty, clear, total, count, onCheckout }) {
       </div>
       <div style={{ borderTop: `3px solid ${P}`, background: OFF }}>
         <div style={{ padding: '11px 14px' }}>
-          {cart.length > 0 && (
-            <div style={{ marginBottom: 10 }}>
-              <div style={{ fontSize: 8, color: '#888', letterSpacing: 1, marginBottom: 5 }}>DESCONTO (R$)</div>
-              <input type="number" value={descontoStr} onChange={e => setDescontoStr(e.target.value)} placeholder="0,00" min="0"
-                style={{ width: '100%', padding: '7px 10px', fontSize: 14, fontWeight: 700, border: `2px solid ${desconto > 0 ? '#e67e22' : P}`, outline: 'none', fontFamily: 'inherit', background: W, color: desconto > 0 ? '#e67e22' : DARK, textAlign: 'center' }} />
-              {desconto > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontSize: 10, color: '#888' }}><span>Subtotal:</span><span style={{ textDecoration: 'line-through' }}>{fmt(total)}</span></div>}
-            </div>
-          )}
           <div style={{ fontSize: 8, color: '#888', letterSpacing: 1 }}>TOTAL</div>
-          <div style={{ fontSize: 26, fontWeight: 700, color: desconto > 0 ? '#e67e22' : P }}>{fmt(totalFinal)}</div>
-          <div style={{ fontSize: 9, color: '#999' }}>{count} item{count !== 1 ? 's' : ''}</div>
+          <div style={{ fontSize: 26, fontWeight: 700, color: P }}>{fmt(total)}</div>
+          <div style={{ fontSize: 9, color: '#999' }}>{count} item{count !== 1 ? 's' : ''}{pessoasMesa > 1 && <span style={{ marginLeft: 8, color: P, fontWeight: 700 }}>· {fmt(totalFinal / pessoasMesa)} p/pessoa</span>}</div>
         </div>
-        <button onClick={() => cart.length > 0 && onCheckout(totalFinal, desconto)} style={{ width: '100%', padding: '16px', fontSize: 12, fontWeight: 700, letterSpacing: 2, background: cart.length > 0 ? P : '#ccc', color: W, border: 'none', cursor: cart.length > 0 ? 'pointer' : 'not-allowed', fontFamily: 'inherit' }}>COBRAR →</button>
+        <div style={{ display: 'flex' }}>
+          <button onClick={() => cart.length > 0 && onPrint && onPrint(totalFinal, desconto)} style={{ padding: '16px 14px', fontSize: 18, background: cart.length > 0 ? '#3a1550' : '#bbb', color: W, border: 'none', borderRight: '1px solid rgba(255,255,255,0.2)', cursor: cart.length > 0 ? 'pointer' : 'not-allowed' }}>🖨</button>
+          <button onClick={() => cart.length > 0 && onCheckout(totalFinal, desconto)} style={{ flex: 1, padding: '16px', fontSize: 12, fontWeight: 700, letterSpacing: 2, background: cart.length > 0 ? P : '#ccc', color: W, border: 'none', cursor: cart.length > 0 ? 'pointer' : 'not-allowed', fontFamily: 'inherit' }}>COBRAR →</button>
+        </div>
       </div>
     </div>
   )
@@ -249,12 +305,30 @@ function PaymentPanel({ total, desconto = 0, onConfirm, onBack, clients }) {
   const [foundClient, setFoundClient] = useState(null)
   const [usePoints, setUsePoints] = useState(false)
   const [confirming, setConfirming] = useState(false)
+  const [dividir, setDividir] = useState(false)
+  const [payment2, setPayment2] = useState(null)
+  const [valor1Str, setValor1Str] = useState('')
 
   const cashVal = parseFloat(cash) || 0
   const pointDiscount = usePoints && foundClient && foundClient !== 'not_found' ? Math.min(foundClient.points, Math.floor(total)) : 0
   const finalTotal = Math.max(0, total - pointDiscount)
-  const change = payment === 'dinheiro' ? Math.max(0, cashVal - finalTotal) : 0
-  const canConfirm = payment && (payment !== 'dinheiro' || cashVal >= finalTotal)
+  const valor1 = parseFloat(valor1Str) || 0
+  const valor2 = Math.max(0, finalTotal - valor1)
+  const change = !dividir && payment === 'dinheiro' ? Math.max(0, cashVal - finalTotal) : 0
+  const canConfirmSimples = !dividir && payment && (payment !== 'dinheiro' || cashVal >= finalTotal)
+  const canConfirmDuplo = dividir && payment && payment2 && valor1 > 0 && Math.abs(valor1 + valor2 - finalTotal) < 0.01
+  const canConfirm = dividir ? canConfirmDuplo : canConfirmSimples
+
+  const PaymentGrid = ({ selected, onSelect, exclude = null }) => (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+      {PAYMENT_METHODS.filter(m => m.key !== exclude).map(m => (
+        <button key={m.key} onClick={() => onSelect(m.key)}
+          style={{ padding: '12px 8px', fontFamily: 'inherit', cursor: 'pointer', fontSize: 11, fontWeight: 700, letterSpacing: 1, border: `2px solid ${P}`, background: selected === m.key ? P : OFF, color: selected === m.key ? W : P }}>
+          {m.label}
+        </button>
+      ))}
+    </div>
+  )
 
   function searchClient() {
     const c = clients.find(c => c.phone === phone.replace(/\D/g, ''))
@@ -281,40 +355,72 @@ function PaymentPanel({ total, desconto = 0, onConfirm, onBack, clients }) {
           {foundClient === 'not_found' && <div style={{ marginTop: 6, fontSize: 10, color: '#999' }}>Cliente não encontrado.</div>}
         </div>
         <div style={{ background: OFF, padding: '12px 14px', borderLeft: `4px solid ${P}` }}>
-          {desconto > 0 && <div style={{ fontSize: 10, color: '#e67e22', marginBottom: 2 }}>Desconto aplicado: −{fmt(desconto)}</div>}
           {pointDiscount > 0 && <div style={{ fontSize: 10, color: '#888', marginBottom: 2 }}>Desconto pontos: −{fmt(pointDiscount)}</div>}
           <div style={{ fontSize: 8, color: '#888' }}>TOTAL A COBRAR</div>
           <div style={{ fontSize: 32, fontWeight: 700, color: P }}>{fmt(finalTotal)}</div>
         </div>
-        <div>
-          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: '#888', marginBottom: 8 }}>FORMA DE PAGAMENTO</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            {PAYMENT_METHODS.map(m => <button key={m.key} onClick={() => { setPayment(m.key); setCash('') }} style={{ padding: '14px 8px', fontFamily: 'inherit', cursor: 'pointer', fontSize: 11, fontWeight: 700, letterSpacing: 1, border: `2px solid ${P}`, background: payment === m.key ? P : OFF, color: payment === m.key ? W : P }}>{m.label}</button>)}
-          </div>
-        </div>
-        {payment === 'dinheiro' && (
+        <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 12, color: '#555', userSelect: 'none' }}>
+          <input type="checkbox" checked={dividir} onChange={e => { setDividir(e.target.checked); setPayment(null); setPayment2(null); setValor1Str(''); setCash('') }}
+            style={{ width: 16, height: 16, accentColor: P, cursor: 'pointer' }} />
+          Dividir em 2 formas de pagamento
+        </label>
+
+        {!dividir && <>
           <div>
-            <Input label="VALOR RECEBIDO (R$)" type="number" value={cash} onChange={setCash} placeholder="0,00" autoFocus style={{ fontSize: 24, fontWeight: 700, textAlign: 'center' }} />
-            {cashVal >= finalTotal && cashVal > 0 && (
-              <div style={{ marginTop: 10, padding: '13px 16px', background: '#e8f5e9', border: `2px solid ${GREEN}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontWeight: 700, fontSize: 10, color: GREEN, letterSpacing: 1 }}>TROCO</span>
-                <span style={{ fontSize: 26, fontWeight: 700, color: GREEN }}>{fmt(change)}</span>
+            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: '#888', marginBottom: 8 }}>FORMA DE PAGAMENTO</div>
+            <PaymentGrid selected={payment} onSelect={(k) => { setPayment(k); setCash('') }} />
+          </div>
+          {payment === 'dinheiro' && (
+            <div>
+              <Input label="VALOR RECEBIDO (R$)" type="number" value={cash} onChange={setCash} placeholder="0,00" autoFocus style={{ fontSize: 24, fontWeight: 700, textAlign: 'center' }} />
+              {cashVal >= finalTotal && cashVal > 0 && (
+                <div style={{ marginTop: 10, padding: '13px 16px', background: '#e8f5e9', border: `2px solid ${GREEN}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 700, fontSize: 10, color: GREEN, letterSpacing: 1 }}>TROCO</span>
+                  <span style={{ fontSize: 26, fontWeight: 700, color: GREEN }}>{fmt(change)}</span>
+                </div>
+              )}
+              {cashVal > 0 && cashVal < finalTotal && <div style={{ marginTop: 8, padding: '10px 12px', background: '#ffebee', border: `2px solid ${RED}`, fontSize: 10, color: RED, fontWeight: 700 }}>FALTA {fmt(finalTotal - cashVal)}</div>}
+            </div>
+          )}
+        </>}
+
+        {dividir && <>
+          <div style={{ borderTop: `1px solid ${OFF}`, paddingTop: 12 }}>
+            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: '#888', marginBottom: 8 }}>FORMA 1</div>
+            <PaymentGrid selected={payment} onSelect={setPayment} exclude={payment2} />
+            {payment && <div style={{ marginTop: 10 }}>
+              <Input label="VALOR (R$)" type="number" value={valor1Str} onChange={setValor1Str} placeholder="0,00" style={{ fontSize: 18, fontWeight: 700, textAlign: 'center' }} />
+              {valor1 > 0 && valor1 < finalTotal && <div style={{ marginTop: 6, fontSize: 10, color: '#888', textAlign: 'right' }}>Falta: <strong style={{ color: P }}>{fmt(finalTotal - valor1)}</strong></div>}
+            </div>}
+          </div>
+          <div style={{ borderTop: `1px solid ${OFF}`, paddingTop: 12 }}>
+            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: '#888', marginBottom: 8 }}>FORMA 2{valor1 > 0 && valor1 < finalTotal ? ` — falta ${fmt(valor2)}` : ''}</div>
+            <PaymentGrid selected={payment2} onSelect={setPayment2} exclude={payment} />
+            {payment2 && valor1 > 0 && (
+              <div style={{ marginTop: 10, padding: '10px 14px', background: canConfirmDuplo ? '#e8f5e9' : OFF, border: `2px solid ${canConfirmDuplo ? GREEN : '#ccc'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 11, color: canConfirmDuplo ? GREEN : '#888', fontWeight: 700 }}>{canConfirmDuplo ? 'PAGO ✓' : 'VALOR FORMA 2'}</span>
+                <span style={{ fontSize: 18, fontWeight: 700, color: canConfirmDuplo ? GREEN : P }}>{fmt(valor2)}</span>
               </div>
             )}
-            {cashVal > 0 && cashVal < finalTotal && <div style={{ marginTop: 8, padding: '10px 12px', background: '#ffebee', border: `2px solid ${RED}`, fontSize: 10, color: RED, fontWeight: 700 }}>FALTA {fmt(finalTotal - cashVal)}</div>}
           </div>
-        )}
+        </>}
       </div>
       <div style={{ borderTop: `2px solid ${P}` }}>
         <button onClick={onBack} style={{ width: '100%', padding: '11px', fontSize: 10, fontWeight: 700, letterSpacing: 1, background: 'transparent', color: P, border: 'none', borderBottom: `1px solid ${OFF}`, cursor: 'pointer', fontFamily: 'inherit' }}>← VOLTAR</button>
-        <button disabled={!canConfirm} onClick={() => { if (confirming) return; setConfirming(true); onConfirm({ payment, finalTotal, change, foundClient: foundClient !== 'not_found' ? foundClient : null, pointsEarned: ptsEarned(finalTotal), pointsUsed: pointDiscount, usePoints }) }} style={{ width: '100%', padding: '18px', fontSize: 13, fontWeight: 700, letterSpacing: 2, background: canConfirm ? P : '#ccc', color: W, border: 'none', cursor: canConfirm ? 'pointer' : 'not-allowed', fontFamily: 'inherit' }}>CONFIRMAR PAGAMENTO</button>
+        <button disabled={!canConfirm} onClick={() => {
+          if (confirming) return; setConfirming(true)
+          const payLabel = dividir
+            ? `${PAYMENT_METHODS.find(m => m.key === payment)?.label} + ${PAYMENT_METHODS.find(m => m.key === payment2)?.label}`
+            : payment
+          onConfirm({ payment: payLabel, finalTotal, change, foundClient: foundClient !== 'not_found' ? foundClient : null, pointsEarned: ptsEarned(finalTotal), pointsUsed: pointDiscount, usePoints })
+        }} style={{ width: '100%', padding: '18px', fontSize: 13, fontWeight: 700, letterSpacing: 2, background: canConfirm ? P : '#ccc', color: W, border: 'none', cursor: canConfirm ? 'pointer' : 'not-allowed', fontFamily: 'inherit' }}>CONFIRMAR PAGAMENTO</button>
       </div>
     </div>
   )
 }
 
 function SuccessScreen({ result, onNew }) {
-  const label = PAYMENT_METHODS.find(m => m.key === result.payment)?.label
+  const label = PAYMENT_METHODS.find(m => m.key === result.payment)?.label || result.payment
   return (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: OFF }}>
       <div style={{ background: W, border: `3px solid ${P}`, padding: '44px 56px', textAlign: 'center', maxWidth: 400, width: '100%' }}>
@@ -657,7 +763,7 @@ function PDVModule({ products, setProducts, clients, onSale }) {
     <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
       <ProductGrid products={products} cart={cart} onAdd={add} />
       {step === 'pdv'
-        ? <CartPanel cart={cart} changeQty={changeQty} clear={clear} total={total} count={count} onCheckout={handleCheckout} />
+        ? <CartPanel cart={cart} changeQty={changeQty} clear={clear} total={total} count={count} onCheckout={handleCheckout} onPrint={(tf, d) => imprimirRecibo({ cart, total: tf, desconto: d })} />
         : <div style={{ width: 360, background: W, display: 'flex', flexDirection: 'column', borderLeft: `3px solid ${P}` }}><PaymentPanel total={totalPagar} desconto={descontoPdv} onConfirm={handleConfirm} onBack={() => setStep('pdv')} clients={clients} /></div>}
     </div>
   )
@@ -665,8 +771,6 @@ function PDVModule({ products, setProducts, clients, onSale }) {
 
 function MesasModule({ products, clients, onSale, mesas, setMesas, mesaAtiva, setMesaAtiva, mesaStep, setMesaStep, mesasCarts, setMesasCarts }) {
   const [result, setResult] = useState(null)
-  const [totalPagarMesa, setTotalPagarMesa] = useState(0)
-  const [descontoMesa, setDescontoMesa] = useState(0)
 
   const cart = mesaAtiva ? (mesasCarts[mesaAtiva] || []) : []
   const total = cart.reduce((s, i) => s + i.price * i.qty, 0)
@@ -699,9 +803,13 @@ function MesasModule({ products, clients, onSale, mesas, setMesas, mesaAtiva, se
     setMesasCarts(prev => ({ ...prev, [mesaAtiva]: [] }))
   }
 
+  const [pessoasStr, setPessoasStr] = useState('')
+  const pessoas = parseInt(pessoasStr) || 0
+
   function abrirMesa(n) {
     if (!mesas[n]) setMesas(m => ({ ...m, [n]: { hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) } }))
     setMesaAtiva(n)
+    setPessoasStr('')
     setMesaStep('pedido')
   }
 
@@ -743,8 +851,17 @@ function MesasModule({ products, clients, onSale, mesas, setMesas, mesaAtiva, se
       <ProductGrid products={products} cart={cart} onAdd={addToCart} />
       {mesaStep === 'pedido'
         ? <div style={{ width: 300, background: W, display: 'flex', flexDirection: 'column', borderLeft: `3px solid ${P}` }}>
-            <div style={{ padding: '11px 14px', borderBottom: `2px solid ${P}`, fontSize: 9, fontWeight: 700, letterSpacing: 1, color: P }}>MESA {mesaAtiva}</div>
-            <CartPanel cart={cart} changeQty={changeQty} clear={clearCart} total={total} count={count} onCheckout={(tf, d) => { setTotalPagarMesa(tf); setDescontoMesa(d); setMesaStep('pay') }} />
+            <div style={{ padding: '11px 14px', borderBottom: `2px solid ${P}`, fontSize: 9, fontWeight: 700, letterSpacing: 1, color: P, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>MESA {mesaAtiva}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 8, color: 'rgba(85,32,114,0.6)', letterSpacing: 1 }}>PESSOAS</span>
+                <input type="number" min="1" value={pessoasStr} onChange={e => setPessoasStr(e.target.value)} placeholder="—"
+                  style={{ width: 44, padding: '3px 6px', fontSize: 12, fontWeight: 700, border: `2px solid ${P}`, outline: 'none', fontFamily: 'inherit', background: OFF, textAlign: 'center' }} />
+              </div>
+            </div>
+            <CartPanel cart={cart} changeQty={changeQty} clear={clearCart} total={total} count={count} pessoasMesa={pessoas}
+              onCheckout={(tf, d) => { setTotalPagarMesa(tf); setDescontoMesa(d); setMesaStep('pay') }}
+              onPrint={(tf, d) => imprimirRecibo({ cart, total: tf, desconto: d, mesa: mesaAtiva, pessoas })} />
             <button onClick={() => { setMesaAtiva(null); setMesaStep('mesas') }} style={{ padding: '11px', fontSize: 10, fontWeight: 700, letterSpacing: 1, background: 'transparent', color: '#888', border: 'none', borderTop: `1px solid ${OFF}`, cursor: 'pointer', fontFamily: 'inherit' }}>← VOLTAR ÀS MESAS</button>
           </div>
         : <div style={{ width: 360, background: W, display: 'flex', flexDirection: 'column', borderLeft: `3px solid ${P}` }}>
@@ -1196,14 +1313,14 @@ function Categorias({ categorias, setCategorias }) {
   async function save() {
     if (!form.name) return
     setLoading(true)
-    const { data } = await supabase.from('categorias').insert({ name: form.name.trim(), tipo: form.tipo }).select().single()
+    const { data } = await supabase.from('categorias').insert({ name: form.name.toLowerCase().trim(), tipo: form.tipo }).select().single()
     if (data) setCategorias(prev => [...prev, data].sort((a,b) => a.name.localeCompare(b.name)))
     setForm({ name: '', tipo: 'produto' })
     setLoading(false)
   }
 
   async function saveEdit(id) {
-    await supabase.from('categorias').update({ name: editData.name.trim(), tipo: editData.tipo }).eq('id', id)
+    await supabase.from('categorias').update({ name: editData.name.toLowerCase().trim(), tipo: editData.tipo }).eq('id', id)
     setCategorias(prev => prev.map(c => c.id === id ? { ...c, name: editData.name.toLowerCase().trim(), tipo: editData.tipo } : c))
     setEditId(null)
   }
@@ -1313,7 +1430,7 @@ export default function App() {
       supabase.from('vendas').select('*, itens:venda_itens(*)').order('created_at', { ascending: false }),
       supabase.from('estoque').select('*').order('name'),
       supabase.from('movimentos').select('*').eq('date', todayStr()).order('created_at'),
-      supabase.from('caixa').select('*').eq('date', todayStr()).maybeSingle(),
+      supabase.from('caixa').select('*').eq('date', todayStr()).single(),
       supabase.from('categorias').select('*').order('name'),
     ])
     if (p.data) setProducts(p.data)
@@ -1321,7 +1438,7 @@ export default function App() {
     if (v.data) setSales(v.data)
     if (e.data) setStockItems(e.data)
     if (m.data) setMovimentos(m.data)
-    if (cx.data) { setCaixaAberto(cx.data.aberto); setFundoInicial(cx.data.fundo_inicial) } else { setCaixaAberto(false); setFundoInicial(0) }
+    if (cx.data) { setCaixaAberto(cx.data.aberto); setFundoInicial(cx.data.fundo_inicial) }
     if (cat.data) setCategorias(cat.data)
   }, [])
 
@@ -1368,7 +1485,6 @@ export default function App() {
     <div style={{ fontFamily: "'DM Sans', sans-serif", background: OFF, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ background: P, color: W, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 22px', height: 50, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <img src="/logo.png" alt="" style={{ height: 30, objectFit: 'contain' }} /> 
           <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, letterSpacing: 1 }}>Rodat</span>
           <span style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.3)' }} />
           <span style={{ fontSize: 9, opacity: 0.6, letterSpacing: 1 }}>DOCES E CAFÉS</span>
