@@ -787,7 +787,6 @@ function MesasModule({ products, clients, onSale, mesas, setMesas, mesaAtiva, se
   const [descontoMesa, setDescontoMesa] = useState(0)
   const [pessoasStr, setPessoasStr] = useState('')
   const pessoas = parseInt(pessoasStr) || 0
-  const cart = mesaAtiva ? (mesasCarts[mesaAtiva] || []) : []
 
   const cart = mesaAtiva ? (mesasCarts[mesaAtiva] || []) : []
   const total = cart.reduce((s, i) => s + i.price * i.qty, 0)
@@ -819,9 +818,6 @@ function MesasModule({ products, clients, onSale, mesas, setMesas, mesaAtiva, se
   function clearCart() {
     setMesasCarts(prev => ({ ...prev, [mesaAtiva]: [] }))
   }
-
-  const [pessoasStr, setPessoasStr] = useState('')
-  const pessoas = parseInt(pessoasStr) || 0
 
   function abrirMesa(n) {
     if (!mesas[n]) setMesas(m => ({ ...m, [n]: { hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) } }))
@@ -1447,7 +1443,7 @@ export default function App() {
       supabase.from('vendas').select('*, itens:venda_itens(*)').order('created_at', { ascending: false }),
       supabase.from('estoque').select('*').order('name'),
       supabase.from('movimentos').select('*').eq('date', todayStr()).order('created_at'),
-      supabase.from('caixa').select('*').eq('date', todayStr()).single(),
+      supabase.from('caixa').select('*').eq('date', todayStr()).maybeSingle(),
       supabase.from('categorias').select('*').order('name'),
     ])
     if (p.data) setProducts(p.data)
@@ -1455,7 +1451,7 @@ export default function App() {
     if (v.data) setSales(v.data)
     if (e.data) setStockItems(e.data)
     if (m.data) setMovimentos(m.data)
-    if (cx.data) { setCaixaAberto(cx.data.aberto); setFundoInicial(cx.data.fundo_inicial) }
+    if (cx.data) { setCaixaAberto(cx.data.aberto); setFundoInicial(cx.data.fundo_inicial) } else { setCaixaAberto(false); setFundoInicial(0) }
     if (cat.data) setCategorias(cat.data)
   }, [])
 
