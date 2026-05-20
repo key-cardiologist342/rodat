@@ -783,6 +783,11 @@ function PDVModule({ products, setProducts, clients, onSale }) {
 
 function MesasModule({ products, clients, onSale, mesas, setMesas, mesaAtiva, setMesaAtiva, mesaStep, setMesaStep, mesasCarts, setMesasCarts }) {
   const [result, setResult] = useState(null)
+  const [totalPagarMesa, setTotalPagarMesa] = useState(0)
+  const [descontoMesa, setDescontoMesa] = useState(0)
+  const [pessoasStr, setPessoasStr] = useState('')
+  const pessoas = parseInt(pessoasStr) || 0
+  const cart = mesaAtiva ? (mesasCarts[mesaAtiva] || []) : []
 
   const cart = mesaAtiva ? (mesasCarts[mesaAtiva] || []) : []
   const total = cart.reduce((s, i) => s + i.price * i.qty, 0)
