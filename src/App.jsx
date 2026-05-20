@@ -258,11 +258,15 @@ function ProductGrid({ products, cart, onAdd }) {
 }
 
 function CartPanel({ cart, changeQty, clear, total, count, onCheckout, onPrint, pessoasMesa = 0 }) {
+  const [descontoStr, setDescontoStr] = useState('')
+  const desconto = Math.min(parseFloat(descontoStr) || 0, total)
+  const totalFinal = Math.max(0, total - desconto)
+
   return (
     <div style={{ width: 300, background: W, display: 'flex', flexDirection: 'column', borderLeft: `3px solid ${P}` }}>
       <div style={{ padding: '11px 14px', borderBottom: `2px solid ${P}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontWeight: 700, fontSize: 9, letterSpacing: 1, color: P }}>ITENS DA VENDA</span>
-        {cart.length > 0 && <button onClick={clear} style={{ fontSize: 9, color: RED, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}>LIMPAR</button>}
+        {cart.length > 0 && <button onClick={() => { clear(); setDescontoStr('') }} style={{ fontSize: 9, color: RED, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}>LIMPAR</button>}
       </div>
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {cart.length === 0 && <div style={{ padding: 28, textAlign: 'center', color: '#bbb', fontSize: 11 }}>Nenhum item</div>}
@@ -285,6 +289,14 @@ function CartPanel({ cart, changeQty, clear, total, count, onCheckout, onPrint, 
       </div>
       <div style={{ borderTop: `3px solid ${P}`, background: OFF }}>
         <div style={{ padding: '11px 14px' }}>
+          {cart.length > 0 && (
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 8, color: '#888', letterSpacing: 1, marginBottom: 5 }}>DESCONTO (R$)</div>
+              <input type="number" value={descontoStr} onChange={e => setDescontoStr(e.target.value)} placeholder="0,00" min="0"
+                style={{ width: '100%', padding: '7px 10px', fontSize: 14, fontWeight: 700, border: `2px solid ${desconto > 0 ? '#e67e22' : P}`, outline: 'none', fontFamily: 'inherit', background: W, color: desconto > 0 ? '#e67e22' : DARK, textAlign: 'center' }} />
+              {desconto > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontSize: 10, color: '#888' }}><span>Subtotal:</span><span style={{ textDecoration: 'line-through' }}>{fmt(total)}</span></div>}
+            </div>
+          )}
           <div style={{ fontSize: 8, color: '#888', letterSpacing: 1 }}>TOTAL</div>
           <div style={{ fontSize: 26, fontWeight: 700, color: P }}>{fmt(total)}</div>
           <div style={{ fontSize: 9, color: '#999' }}>{count} item{count !== 1 ? 's' : ''}{pessoasMesa > 1 && <span style={{ marginLeft: 8, color: P, fontWeight: 700 }}>· {fmt(totalFinal / pessoasMesa)} p/pessoa</span>}</div>
