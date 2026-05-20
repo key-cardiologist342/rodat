@@ -298,7 +298,7 @@ function CartPanel({ cart, changeQty, clear, total, count, onCheckout, onPrint, 
             </div>
           )}
           <div style={{ fontSize: 8, color: '#888', letterSpacing: 1 }}>TOTAL</div>
-          <div style={{ fontSize: 26, fontWeight: 700, color: P }}>{fmt(total)}</div>
+          <div style={{ fontSize: 26, fontWeight: 700, color: desconto > 0 ? '#e67e22' : P }}>{fmt(totalFinal)}</div>
           <div style={{ fontSize: 9, color: '#999' }}>{count} item{count !== 1 ? 's' : ''}{pessoasMesa > 1 && <span style={{ marginLeft: 8, color: P, fontWeight: 700 }}>· {fmt(totalFinal / pessoasMesa)} p/pessoa</span>}</div>
         </div>
         <div style={{ display: 'flex' }}>
